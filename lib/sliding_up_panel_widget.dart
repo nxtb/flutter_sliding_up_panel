@@ -329,10 +329,14 @@ class _SlidingUpPanelWidgetState extends State<SlidingUpPanelWidget>
 
   ///Expand the panel
   void expand() {
-    _animationController.animateTo(1.0,
-        curve: Curves.linearToEaseOut, duration: _kSlidingUpPanelDuration);
-    widget.panelController.value = SlidingUpPanelStatus.expanded;
-    widget.onStatusChanged?.call(widget.panelController.status);
+    if (_animationController.value > widget.anchor) {
+      _animationController.animateTo(1.0,
+          curve: Curves.linearToEaseOut, duration: _kSlidingUpPanelDuration);
+      widget.panelController.value = SlidingUpPanelStatus.expanded;
+      widget.onStatusChanged?.call(widget.panelController.status);
+    } else {
+      anchor();
+    }
   }
 
   ///Anchor the panel
