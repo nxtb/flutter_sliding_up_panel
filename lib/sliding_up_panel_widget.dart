@@ -49,6 +49,11 @@ class SlidingUpPanelWidget extends StatefulWidget {
   /// The height of the widget to drag
   final double controlHeight;
 
+  /// The widget which will sit on top of the drawer
+  ///
+  /// and will not alter the position of the expanded drawer placement
+  final Widget? leadingWidget;
+
   /// The animation that controls the bottom sheet's position.
   ///
   /// The BottomSheet widget will manipulate the position of this animation, it
@@ -98,6 +103,7 @@ class SlidingUpPanelWidget extends StatefulWidget {
   SlidingUpPanelWidget({
     required this.child,
     required this.controlHeight,
+    this.leadingWidget,
     this.animationController,
     required this.panelController,
     this.onStatusChanged,
@@ -207,57 +213,64 @@ class _SlidingUpPanelWidgetState extends State<SlidingUpPanelWidget>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: MediaQuery.removePadding(
-        context: context,
-        removeTop: false,
-        removeBottom: true,
-        child: SafeArea(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (BuildContext context, Widget? child) {
-              return SlideTransition(
-                child: child,
-                position: animation,
-              );
-            },
-            child: GestureDetector(
-              onVerticalDragUpdate: _handleDragUpdate,
-              onVerticalDragEnd: _handleDragEnd,
-              onVerticalDragStart: _handleDragStart,
-              onVerticalDragCancel: _handleDragCancel,
-              onVerticalDragDown: _handleDragDown,
-              child: Material(
-                key: _childKey,
-                color: Colors.transparent,
-                elevation: widget.elevation,
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height,
-                  child: widget.child,
+    return Column(
+      children: [
+        widget.leadingWidget ?? Container(),
+        Expanded(
+          child: GestureDetector(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: false,
+              removeBottom: true,
+              child: SafeArea(
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (BuildContext context, Widget? child) {
+                    return SlideTransition(
+                      child: child,
+                      position: animation,
+                    );
+                  },
+                  child: GestureDetector(
+                    onVerticalDragUpdate: _handleDragUpdate,
+                    onVerticalDragEnd: _handleDragEnd,
+                    onVerticalDragStart: _handleDragStart,
+                    onVerticalDragCancel: _handleDragCancel,
+                    onVerticalDragDown: _handleDragDown,
+                    child: Material(
+                      key: _childKey,
+                      color: Colors.transparent,
+                      elevation: widget.elevation,
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height,
+                        child: widget.child,
+                      ),
+                    ),
+                    excludeFromSemantics: true,
+                  ),
                 ),
               ),
-              excludeFromSemantics: true,
             ),
+            onTap: widget.enableOnTap
+                ? (widget.onTap ??
+                    () {
+                      if (SlidingUpPanelStatus.anchored ==
+                          widget.panelController.status) {
+                        collapse();
+                      } else if (SlidingUpPanelStatus.collapsed ==
+                          widget.panelController.status) {
+                        anchor();
+                      } else if (SlidingUpPanelStatus.expanded ==
+                          widget.panelController.status) {
+                        collapse();
+                      } else {
+                        collapse();
+                      }
+                    })
+                : null,
           ),
         ),
-      ),
-      onTap: widget.enableOnTap
-          ? (widget.onTap ??
-              () {
-                if (SlidingUpPanelStatus.anchored ==
-                    widget.panelController.status) {
-                  collapse();
-                } else if (SlidingUpPanelStatus.collapsed ==
-                    widget.panelController.status) {
-                  anchor();
-                } else if (SlidingUpPanelStatus.expanded ==
-                    widget.panelController.status) {
-                  collapse();
-                } else {
-                  collapse();
-                }
-              })
-          : null,
+      ],
     );
   }
 
