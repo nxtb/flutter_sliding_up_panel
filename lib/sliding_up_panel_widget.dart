@@ -177,7 +177,7 @@ class _SlidingUpPanelWidgetState extends State<SlidingUpPanelWidget>
       ),
     );
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) => _initData(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initData(context));
   }
 
   void _initData(BuildContext context) {
